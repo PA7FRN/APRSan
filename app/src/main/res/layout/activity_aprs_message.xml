@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:gravity="top"
+    android:orientation="vertical"
+    android:background="@color/colorBackground"
+    >
+
+    <TextView
+        android:text="@string/callsign"
+        android:id="@+id/tvCallsign"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="30sp"
+        android:textColor="@color/textColor"
+        />
+    <TextView
+        android:text="@string/message"
+        android:id="@+id/tvMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="30sp"
+        android:textColor="@color/textColor"
+        />
+
+    <TableRow
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        style="?android:attr/buttonBarStyle"
+        >
+        <Button
+            android:id="@+id/btnClose"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onCloseClick"
+            android:text="@string/close_message"
+            style="?android:attr/buttonBarButtonStyle" >
+        </Button>
+        <Button
+            android:id="@+id/btnReplyOk"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onReplyOkClick"
+            android:text="@string/ok"
+            style="?android:attr/buttonBarButtonStyle" >
+        </Button>
+        <Button
+            android:id="@+id/btnReplyNotOk"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onReplyNotOkClick"
+            android:text="@string/not_ok"
+            style="?android:attr/buttonBarButtonStyle" >
+        </Button>
+        <Button
+            android:id="@+id/btnReplyLater"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onReplyLaterClick"
+            android:text="@string/later"
+            style="?android:attr/buttonBarButtonStyle" >
+        </Button>
+    </TableRow>
+
+</LinearLayout>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:gravity="top"
+    android:orientation="vertical"
+    android:background="@color/colorBackground"
+    >
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/my_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:elevation="4dp"
+        android:theme="@style/AppTheme"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
+
+    <TextView
+        android:text="@string/no_status"
+        android:id="@+id/tvStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="15sp"
+        android:textColor="@color/textColor"
+        />
+    <TableLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:stretchColumns="1"
+        android:shrinkColumns="0"
+        >
+        <TableRow android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <TextView android:id="@+id/tvOwnCallsign"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textSize="20sp"
+                android:textColor="@color/textColor"
+                />
+            <TextView android:id="@+id/tvOwnPosition"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:maxLines="1"
+                android:ellipsize="none"
+                android:gravity="end"
+                android:textSize="20sp"
+                android:textColor="@color/textColor"
+                />
+        </TableRow>
+        <TableRow android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <TextView android:id="@+id/tvPosCallsign"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textSize="20sp"
+                android:textColor="@color/textColor"
+                />
+            <TextView android:id="@+id/tvPosition"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:maxLines="1"
+                android:ellipsize="none"
+                android:gravity="end"
+                android:textSize="20sp"
+                android:textColor="@color/textColor"
+                />
+        </TableRow>
+    </TableLayout>
+
+</LinearLayout>
