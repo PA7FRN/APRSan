@@ -15,6 +15,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
@@ -37,6 +38,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onServiceConnected(ComponentName className, IBinder binder) {
                 AprsService.MyBinder b = (AprsService.MyBinder) binder;
                 aprsService = b.getService();
+                AprsRecord station = aprsService.getMyStation();
+                float zoom = aprsService.loadZoom();
+                LatLng latLng = new LatLng(station.getLocation().getLatitude(), station.getLocation().getLongitude());
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
                 aprsService.updateMap();
             }
 
@@ -85,6 +90,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onDestroy() {
+        CameraPosition mMyCam = mMap.getCameraPosition();
+        float zoom = mMyCam.zoom;
+        aprsService.saveZoom(zoom);
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
         super.onDestroy();
     }

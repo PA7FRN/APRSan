@@ -462,14 +462,14 @@ public class AprsService extends Service {
 
     public void updateMap() {
         Intent intent;
-        if (doInitZoom) {
-            doInitZoom = false;
-            intent = new Intent("ZOOM_MAP");
-            intent.putExtra("location", myLocation);
-            broadcaster.sendBroadcast(intent);
-        }
+    //    if (doInitZoom) {
+    //        doInitZoom = false;
+    //        intent = new Intent("ZOOM_MAP");
+    //        intent.putExtra("location", myLocation);
+    //        broadcaster.sendBroadcast(intent);
+    //    }
 
-        for (int idx=0; idx < stationsData.size(); idx++) {
+        for (int idx = 0; idx < stationsData.size(); idx++) {
             intent = new Intent("ADD_STATION");
             intent.putExtra("index", idx);
             broadcaster.sendBroadcast(intent);
@@ -478,7 +478,16 @@ public class AprsService extends Service {
             intent = new Intent("ADD_MY_STATION");
             broadcaster.sendBroadcast(intent);
         }
+    }
 
+    public void saveZoom(float zoom) {
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putFloat("zoom", zoom);
+        editor.apply();
+    }
+
+    public float loadZoom() {
+        return  settings.getFloat("zoom", 12.0f);
     }
 
     public boolean getAprsActive() {
