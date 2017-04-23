@@ -99,7 +99,7 @@ class AprsRecord {
 
     void setLocation(Location aLocation, String packet) {
         location.set(aLocation);
-        locationKnown = true;
+        locationKnown = true; // this is ok
         symbolChanged = aprsDecoder.decodeAprsSymbol(packet, aprsSymbol);
         lastHeard = System.currentTimeMillis()/1000;
     }
