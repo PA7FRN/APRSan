@@ -133,6 +133,7 @@ class AprsRecord {
             marker.remove();
             marker = null;
         }
+<<<<<<< HEAD
         symbolChanged = false;
     }
 
@@ -152,6 +153,23 @@ class AprsRecord {
             }
             if (isBeacon) {
                 marker.showInfoWindow();
+=======
+    }
+
+    void moveMarker(GoogleMap map, boolean gps) {
+        /*old code*/
+        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+        if (marker == null) {
+            marker = map.addMarker(new MarkerOptions().position(latLng).title(name));
+            marker.setIcon(BitmapDescriptorFactory.fromBitmap(aprsDecoder.getSymbolBitmap(aprsSymbol)));
+            iconChanged = false;
+        }
+        else {
+            marker.setPosition(latLng);
+            if (iconChanged) {
+                marker.setIcon(BitmapDescriptorFactory.fromBitmap(aprsDecoder.getSymbolBitmap(aprsSymbol)));
+                iconChanged = false;
+>>>>>>> master
             }
         }
     }

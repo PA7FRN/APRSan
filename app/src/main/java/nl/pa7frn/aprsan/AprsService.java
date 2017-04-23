@@ -5,8 +5,6 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -35,22 +33,19 @@ public class AprsService extends Service {
     private boolean doSendNextItem = true;
     private boolean serviceStarted = false;
     private boolean taskCheckItemSent = true;
-    private boolean doInitZoom = true;
     private int aprsApiVersion = 0;
-    private String myCallsign = "";
 
     private AprsPermissions aprsPermissions;
     private AprsAudioManager aprsAudioManager;
 
     private AprsDecoder aprsDecoder;
-    private AprsRecord myRecord;
+    private AprsRecord myStation;
     private AprsData stationsData;
     private AprsData itemsData;
     private AprsDataLoader aprsDataLoader;
     private AprsLog aprsLog;
 
     private LocalBroadcastManager broadcaster;
-    private Location myLocation = null;
     private LocationListener locationListener;
     private LocationManager locationManager;
     private ScheduledExecutorService scheduleTaskExecutor;
@@ -68,20 +63,20 @@ public class AprsService extends Service {
         aprsLog = new AprsLog(aprsPermissions, "aprs_log.txt");
         aprsAudioManager = new AprsAudioManager(this);
 
-        Bitmap aprsSymbols = BitmapFactory.decodeResource(getResources(),
-                R.drawable.allicons);
-        aprsDecoder = new AprsDecoder(aprsSymbols);
+        aprsDecoder = new AprsDecoder();
+        myStation = new AprsRecord(
+                aprsDecoder, "", "", "", 0, false, false, false
+        );
         stationsData = new AprsData(aprsDecoder);
         itemsData = new AprsData(aprsDecoder);
         aprsDataLoader = new AprsDataLoader(settings, aprsPermissions);
         loadData();
 
-        myLocation = new Location("");
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         if (aprsPermissions.negotiatePermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
             Location newLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             if (newLocation != null) {
-                myLocation.set(newLocation);
+                myStation.setLocation(newLocation, "");
             }
         }
 
@@ -101,8 +96,8 @@ public class AprsService extends Service {
 
             @Override
             public void onLocationChanged(Location location) {
-                myLocation.set(location);
-                toUiMyLocation("");
+                myStation.setLocation(location, "");
+                toUiMyLocation(false);
                 ownLocationChange();
             }
         };
@@ -167,14 +162,15 @@ public class AprsService extends Service {
             case "SERVICE_STARTED":
                 serviceStarted = true;
                 aprsApiVersion = intent.getIntExtra("api_version", 0);
-                myCallsign = intent.getStringExtra("callsign");
+                String myCallsign = intent.getStringExtra("callsign");
+                myStation.name = myCallsign;
 
                 SharedPreferences.Editor editor = settings.edit();
                 editor.putInt("aprsApiVersion", aprsApiVersion);
                 editor.putString("myCallsign", myCallsign);
                 editor.apply();
 
-                toUiMyLocation("");
+                toUiMyLocation(false);
                 aprsAudioManager.playSound(ToneGenerator.TONE_CDMA_ABBR_INTERCEPT);
                 break;
             case "SERVICE_STOPPED":
@@ -204,10 +200,10 @@ public class AprsService extends Service {
                 String callsign = intent.getStringExtra("callsign");
                 Location location = intent.getParcelableExtra("location");
                 String packet = intent.getStringExtra("packet");
-                if (myCallsign != null) {
-                    if (callsign.equals(myCallsign)) {
-                        myLocation.set(location);
-                        toUiMyLocation(packet);
+                if ( !myStation.name.equals("") ) {
+                    if (callsign.equals(myStation.name)) {
+                        myStation.setLocation(location, packet);
+                        toUiMyLocation(true);
                         aprsAudioManager.delaySounds();
                         if (txNextItemScheduleHandle != null) {
                             if (!txNextItemScheduleHandle.isDone()) {
@@ -237,7 +233,7 @@ public class AprsService extends Service {
                         }
                         break;
                     case 3:
-                        if (logText.indexOf(myCallsign) == 0) {
+                        if (logText.indexOf(myStation.name) == 0) {
                             aprsAudioManager.playSound(ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD);
                         }
                         break;
@@ -285,7 +281,7 @@ public class AprsService extends Service {
 
     private void loadData() {
         aprsApiVersion = settings.getInt("aprsApiVersion", 0);
-        myCallsign = settings.getString("myCallsign", "");
+        myStation.name = settings.getString("myCallsign", "");
         aprsDataLoader.loadData(itemsData);
         aprsLog.loadFromFile();
     }
@@ -328,7 +324,7 @@ public class AprsService extends Service {
 
     private void checkDistance(AprsRecord aprsRecord) {
         boolean reached = aprsRecord.getReached();
-        if (aprsRecord.checkDistance(myLocation)) {
+        if (aprsRecord.checkDistance(myStation.getLocationX())) {
             if (!reached) {
                 reportItemReached(aprsRecord, true);
             }
@@ -384,25 +380,14 @@ public class AprsService extends Service {
         broadcaster.sendBroadcast(intent);
     }
 
-    private void toUiMyLocation(String packet) {
+    private void toUiMyLocation(boolean isBeacon) {
         Intent intent = new Intent("MY_POSITION");
-        intent.putExtra("callsign",  myCallsign);
-        intent.putExtra("location", myLocation);
-        intent.putExtra("packet", packet);
+        intent.putExtra("callsign",  myStation.name);
+        intent.putExtra("location", myStation.getLocationX());
         broadcaster.sendBroadcast(intent);
 
-        if (myRecord == null) {
-            myRecord = new AprsRecord(
-                    aprsDecoder, myCallsign, packet, "", 0, false, false, false, myLocation.getLatitude(), myLocation.getLongitude()
-            );
-            intent = new Intent("ADD_MY_STATION");
-        }
-        else {
-            myRecord.setLocation(myLocation, packet);
-            intent = new Intent("MOVE_MY_STATION");
-            intent.putExtra("gps", packet.equals(""));
-        }
-
+        intent = new Intent("MOVE_MY_STATION");
+        intent.putExtra("is_beacon", isBeacon);
         broadcaster.sendBroadcast(intent);
     }
 
@@ -451,7 +436,12 @@ public class AprsService extends Service {
 
     public void update() {
         toUiStatus();
-        toUiMyLocation("");
+
+        Intent intent = new Intent("MY_POSITION");
+        intent.putExtra("callsign",  myStation.name);
+        intent.putExtra("location", myStation.getLocationX());
+        broadcaster.sendBroadcast(intent);
+
         toUiMessage();
 
         int logCount = aprsLog.getCount();
@@ -462,22 +452,13 @@ public class AprsService extends Service {
 
     public void updateMap() {
         Intent intent;
-    //    if (doInitZoom) {
-    //        doInitZoom = false;
-    //        intent = new Intent("ZOOM_MAP");
-    //        intent.putExtra("location", myLocation);
-    //        broadcaster.sendBroadcast(intent);
-    //    }
-
         for (int idx = 0; idx < stationsData.size(); idx++) {
             intent = new Intent("ADD_STATION");
             intent.putExtra("index", idx);
             broadcaster.sendBroadcast(intent);
         }
-        if (myRecord != null) {
-            intent = new Intent("ADD_MY_STATION");
-            broadcaster.sendBroadcast(intent);
-        }
+        intent = new Intent("ADD_MY_STATION");
+        broadcaster.sendBroadcast(intent);
     }
 
     public void saveZoom(float zoom) {
@@ -499,7 +480,7 @@ public class AprsService extends Service {
     }
 
     public String getMyCallsign() {
-        return  myCallsign;
+        return  myStation.name;
     }
 
     public int getMsgCount() {
@@ -546,6 +527,6 @@ public class AprsService extends Service {
     }
 
     public AprsRecord getMyStation() {
-        return myRecord;
+        return myStation;
     }
 }
