@@ -301,6 +301,7 @@ class AprsRecord {
     }
 
     void moveMarker(GoogleMap map, boolean gps) {
+        /*old code*/
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
         if (marker == null) {
             marker = map.addMarker(new MarkerOptions().position(latLng).title(name));
