@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.IBinder;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
@@ -23,6 +25,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private ServiceConnection mConnection;
     BroadcastReceiver receiver;
     private GoogleMap mMap;
+    private Bitmap allSymbols;
+    private AprsSymbols mSymbols;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,8 +44,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 aprsService = b.getService();
                 AprsRecord station = aprsService.getMyStation();
                 float zoom = aprsService.loadZoom();
-                LatLng latLng = new LatLng(station.getLocation().getLatitude(), station.getLocation().getLongitude());
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
+                LatLng latLng = station.getLatLng();
+                if (latLng != null) {
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
+                }
                 aprsService.updateMap();
             }
 
@@ -59,7 +65,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         addMyStation();
                         break;
                     case "MOVE_MY_STATION":
-                        moveMyStation(intent.getBooleanExtra("gps", false));
+                        moveMyStation(intent.getBooleanExtra("is_beacon", false));
                         break;
                     case "ADD_STATION":
                         addStation(intent.getIntExtra("index", -1));
@@ -94,6 +100,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         float zoom = mMyCam.zoom;
         aprsService.saveZoom(zoom);
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+        allSymbols.recycle();
         super.onDestroy();
     }
 
@@ -117,12 +124,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.setTrafficEnabled(true);
+        allSymbols = BitmapFactory.decodeResource(getResources(),
+                R.drawable.allicons);
+        mSymbols = new AprsSymbols(allSymbols);
     }
 
     private void addStation(int stationIndex) {
         AprsRecord station = aprsService.getStation(stationIndex);
         if (station != null) {
-            station.setMarker(mMap);
+            station.setMarker(mMap, mSymbols);
         }
     }
 
@@ -136,22 +146,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private void moveStation(int stationIndex) {
         AprsRecord station = aprsService.getStation(stationIndex);
         if (station != null) {
-            station.moveMarker(mMap, false);
+            station.moveMarker(mMap, mSymbols, false);
         }
     }
 
      private void addMyStation() {
-        AprsRecord station = aprsService.getMyStation();
-        station.setMarker(mMap);
-        LatLng latLng = new LatLng(station.getLocation().getLatitude(), station.getLocation().getLongitude());
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+         AprsRecord station = aprsService.getMyStation();
+         station.setMarker(mMap, mSymbols);
+         LatLng latLng = station.getLatLng();
+         if (latLng != null) {
+             mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+         }
     }
 
-    private void moveMyStation(boolean gps) {
+    private void moveMyStation(boolean isBeacon) {
         AprsRecord station = aprsService.getMyStation();
-        station.moveMarker(mMap, gps);
-        LatLng latLng = new LatLng(station.getLocation().getLatitude(), station.getLocation().getLongitude());
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+        station.moveMarker(mMap, mSymbols, isBeacon);
+        LatLng latLng = station.getLatLng();
+        if (latLng != null) {
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+        }
     }
 
     private void zoomMap() {
