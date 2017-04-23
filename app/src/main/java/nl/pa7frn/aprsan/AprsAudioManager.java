@@ -1,10 +1,5 @@
 package nl.pa7frn.aprsan;
 
-/**
- * Created by earts001 on 2/19/2017.
- * manages notification audiofor APRS events
- */
-
 import android.content.Context;
 import android.media.ToneGenerator;
 import android.media.AudioManager;

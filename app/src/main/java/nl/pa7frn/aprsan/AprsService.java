@@ -38,7 +38,6 @@ public class AprsService extends Service {
     private AprsPermissions aprsPermissions;
     private AprsAudioManager aprsAudioManager;
 
-    private AprsDecoder aprsDecoder;
     private AprsRecord myStation;
     private AprsData stationsData;
     private AprsData itemsData;
@@ -63,7 +62,7 @@ public class AprsService extends Service {
         aprsLog = new AprsLog(aprsPermissions, "aprs_log.txt");
         aprsAudioManager = new AprsAudioManager(this);
 
-        aprsDecoder = new AprsDecoder();
+        AprsDecoder aprsDecoder = new AprsDecoder();
         myStation = new AprsRecord(
                 aprsDecoder, "", "", "", 0, false, false, false
         );
@@ -324,7 +323,7 @@ public class AprsService extends Service {
 
     private void checkDistance(AprsRecord aprsRecord) {
         boolean reached = aprsRecord.getReached();
-        if (aprsRecord.checkDistance(myStation.getLocationX())) {
+        if (aprsRecord.checkDistance(myStation.getLocation())) {
             if (!reached) {
                 reportItemReached(aprsRecord, true);
             }
@@ -383,7 +382,7 @@ public class AprsService extends Service {
     private void toUiMyLocation(boolean isBeacon) {
         Intent intent = new Intent("MY_POSITION");
         intent.putExtra("callsign",  myStation.name);
-        intent.putExtra("location", myStation.getLocationX());
+        intent.putExtra("location", myStation.getLocation());
         broadcaster.sendBroadcast(intent);
 
         intent = new Intent("MOVE_MY_STATION");
@@ -439,7 +438,7 @@ public class AprsService extends Service {
 
         Intent intent = new Intent("MY_POSITION");
         intent.putExtra("callsign",  myStation.name);
-        intent.putExtra("location", myStation.getLocationX());
+        intent.putExtra("location", myStation.getLocation());
         broadcaster.sendBroadcast(intent);
 
         toUiMessage();

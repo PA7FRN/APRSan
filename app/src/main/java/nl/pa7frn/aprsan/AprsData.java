@@ -99,12 +99,12 @@ class AprsRecord {
 
     void setLocation(Location aLocation, String packet) {
         location.set(aLocation);
-        locationKnown = true; // this is ok
+        locationKnown = true;
         symbolChanged = aprsDecoder.decodeAprsSymbol(packet, aprsSymbol);
         lastHeard = System.currentTimeMillis()/1000;
     }
 
-    Location getLocationX() { return location; }
+    Location getLocation() { return location; }
 
     LatLng getLatLng() {
         if (locationKnown) {
@@ -136,7 +136,7 @@ class AprsRecord {
         symbolChanged = false;
     }
 
-    void moveMarker(GoogleMap map, AprsSymbols aprsSymbols, boolean isBeacon) {
+    void moveMarker(GoogleMap map, AprsSymbols aprsSymbols, boolean doShowInfoWindow) {
         if (locationKnown) {
             LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
             if (marker == null) {
@@ -150,7 +150,7 @@ class AprsRecord {
                     symbolChanged = false;
                 }
             }
-            if (isBeacon) {
+            if (doShowInfoWindow) {
                 marker.showInfoWindow();
             }
         }
@@ -195,12 +195,6 @@ class AprsData extends ArrayList<AprsRecord> {
         add(aprsRecord);
         return aprsRecord;
     }
-
- //   @Override
- //   public AprsRecord remove(int index) {
- //       get(index).removeMarker();
- //       return super.remove(index);
- //   }
 
     int indexOf(String aName) {
         int itemCount = size();

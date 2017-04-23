@@ -1,10 +1,5 @@
 package nl.pa7frn.aprsan;
 
-/**
- * Created by earts001 on 2/19/2017.
- * To make logging to file in  aprs directory.
- */
-
 import android.Manifest;
 import android.os.Environment;
 

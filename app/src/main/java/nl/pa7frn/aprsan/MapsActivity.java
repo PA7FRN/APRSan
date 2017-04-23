@@ -76,9 +76,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     case "MOVE_STATION":
                         moveStation(intent.getIntExtra("index", -1));
                         break;
-                    case "ZOOM_MAP":
-                        zoomMap();
-                        break;
                 }
             }
         };
@@ -88,7 +85,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         filter.addAction("ADD_STATION");
         filter.addAction("REMOVE_STATION");
         filter.addAction("MOVE_STATION");
-        filter.addAction("ZOOM_MAP");
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 (receiver), filter
         );
@@ -96,9 +92,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onDestroy() {
-        CameraPosition mMyCam = mMap.getCameraPosition();
-        float zoom = mMyCam.zoom;
-        aprsService.saveZoom(zoom);
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
         allSymbols.recycle();
         super.onDestroy();
@@ -116,6 +109,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     protected void onStop() {
+        CameraPosition mMyCam = mMap.getCameraPosition();
+        aprsService.saveZoom(mMyCam.zoom);
         unbindService(mConnection);
         super.onStop();
     }
@@ -146,7 +141,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private void moveStation(int stationIndex) {
         AprsRecord station = aprsService.getStation(stationIndex);
         if (station != null) {
-            station.moveMarker(mMap, mSymbols, false);
+            station.moveMarker(mMap, mSymbols, true);
         }
     }
 
@@ -167,9 +162,5 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
         }
     }
-
-    private void zoomMap() {
-        mMap.animateCamera(CameraUpdateFactory.zoomTo(10.0f));
-     }
 
 }
