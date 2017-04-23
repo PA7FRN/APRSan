@@ -6,11 +6,6 @@ import android.content.pm.PackageManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
 
-/**
- * Created by earts001 on 2/25/2017.
- * Generic way of negotiation of permissions
- */
-
 class AprsPermissions {
     private Context context;
     private LocalBroadcastManager broadcaster;

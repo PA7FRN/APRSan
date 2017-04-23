@@ -14,13 +14,8 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-/**
- * Created by earts001 on 2/27/2017.
- * Show message
- */
-
 public class AprsMessageActivity  extends AppCompatActivity {
-    private AprsService s;
+    private AprsService aprsService;
     private ServiceConnection mConnection;
     private BroadcastReceiver receiver;
 
@@ -39,12 +34,12 @@ public class AprsMessageActivity  extends AppCompatActivity {
 
             public void onServiceConnected(ComponentName className, IBinder binder) {
                 AprsService.MyBinder b = (AprsService.MyBinder) binder;
-                s = b.getService();
-                s.update();
+                aprsService = b.getService();
+                aprsService.updateMsg();
             }
 
             public void onServiceDisconnected(ComponentName className) {
-                s = null;
+                aprsService = null;
             }
         };
 
@@ -90,33 +85,31 @@ public class AprsMessageActivity  extends AppCompatActivity {
     }
 
     public void onCloseClick(View view) {
-        if (s != null) {
-            s.closeMessage();
-            Toast.makeText(this, s.getMsgCount() + " messages", Toast.LENGTH_SHORT).show();
+        if (aprsService != null) {
+            aprsService.closeMessage();
+            Toast.makeText(this, aprsService.getMsgCount() + " messages", Toast.LENGTH_SHORT).show();
         }
     }
 
     public void onReplyOkClick(View view) {
-        if (s != null) {
-            s.replyMessage("Yes OK");
-            Toast.makeText(this, s.getMsgCount() + " messages", Toast.LENGTH_SHORT).show();
+        if (aprsService != null) {
+            aprsService.replyMessage("Yes OK");
+            Toast.makeText(this, aprsService.getMsgCount() + " messages", Toast.LENGTH_SHORT).show();
         }
     }
 
     public void onReplyNotOkClick(View view) {
-        if (s != null) {
-            s.replyMessage("Negative");
-            Toast.makeText(this, s.getMsgCount() + " messages", Toast.LENGTH_SHORT).show();
+        if (aprsService != null) {
+            aprsService.replyMessage("Negative");
+            Toast.makeText(this, aprsService.getMsgCount() + " messages", Toast.LENGTH_SHORT).show();
         }
     }
 
     public void onReplyLaterClick(View view) {
-        if (s != null) {
-            s.replyMessage("Will reply later");
-            Toast.makeText(this, s.getMsgCount() + " messages", Toast.LENGTH_SHORT).show();
+        if (aprsService != null) {
+            aprsService.replyMessage("Will reply later");
+            Toast.makeText(this, aprsService.getMsgCount() + " messages", Toast.LENGTH_SHORT).show();
         }
     }
-
-
 
 }
