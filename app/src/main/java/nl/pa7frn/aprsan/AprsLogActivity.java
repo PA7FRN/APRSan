@@ -15,13 +15,8 @@ import android.widget.ArrayAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by earts001 on 2/26/2017.
- * Show log
- */
-
 public class AprsLogActivity extends ListActivity {
-    private AprsService s;
+    private AprsService aprsService;
     private ServiceConnection mConnection;
     private BroadcastReceiver receiver;
     private ArrayAdapter<String> adapter;
@@ -44,13 +39,13 @@ public class AprsLogActivity extends ListActivity {
 
             public void onServiceConnected(ComponentName className, IBinder binder) {
                 AprsService.MyBinder b = (AprsService.MyBinder) binder;
-                s = b.getService();
+                aprsService = b.getService();
                 wordList.clear();
-                s.update();
+                aprsService.updateLog();
             }
 
             public void onServiceDisconnected(ComponentName className) {
-                s = null;
+                aprsService = null;
             }
         };
 

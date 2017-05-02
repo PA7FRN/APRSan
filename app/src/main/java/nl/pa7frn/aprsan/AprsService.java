@@ -435,18 +435,12 @@ public class AprsService extends Service {
 
     public void update() {
         toUiStatus();
-
         Intent intent = new Intent("MY_POSITION");
         intent.putExtra("callsign",  myStation.name);
         intent.putExtra("location", myStation.getLocation());
         broadcaster.sendBroadcast(intent);
 
         toUiMessage();
-
-        int logCount = aprsLog.getCount();
-        for (int i=0; i<logCount; i++) {
-            toUiLogLine(aprsLog.getLogLine(i));
-        }
     }
 
     public void updateMap() {
@@ -458,6 +452,17 @@ public class AprsService extends Service {
         }
         intent = new Intent("ADD_MY_STATION");
         broadcaster.sendBroadcast(intent);
+    }
+
+    public void updateLog() {
+        int logCount = aprsLog.getCount();
+        for (int i=0; i<logCount; i++) {
+            toUiLogLine(aprsLog.getLogLine(i));
+        }
+    }
+
+    public void updateMsg() {
+        toUiMessage();
     }
 
     public void saveZoom(float zoom) {
