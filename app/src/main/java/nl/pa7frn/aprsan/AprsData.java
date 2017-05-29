@@ -157,7 +157,8 @@ class AprsRecord {
     }
 
     boolean checkDistance(Location aLocation) {
-        return locationKnown && (location.distanceTo(aLocation) < radius);
+        reached = locationKnown && (location.distanceTo(aLocation) < radius);
+        return reached;
     }
 }
 
